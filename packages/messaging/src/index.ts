@@ -37,3 +37,6 @@ export interface MessageBroker {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
 }
+
+export { KafkaProducer } from './kafka/kafka.producer';
+export { KafkaConsumer } from './kafka/kafka.consumer';
