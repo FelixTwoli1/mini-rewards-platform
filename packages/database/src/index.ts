@@ -6,40 +6,18 @@ import { logger } from '@rewards/logger';
 
 export const prisma = new PrismaClient({
   log: [
-    {
-      emit: 'event',
-      level: 'query',
-    },
-    {
-      emit: 'event',
-      level: 'error',
-    },
-    {
-      emit: 'event',
-      level: 'warn',
-    },
+    { emit: 'event', level: 'query' },
+    { emit: 'event', level: 'error' },
+    { emit: 'event', level: 'warn' },
   ],
 });
 
 prisma.$on('query', (e) => {
-  logger.debug(
-    {
-      duration: e.duration,
-      query: e.query,
-      params: e.params,
-    },
-    'Query executed'
-  );
+  logger.debug({ duration: e.duration, query: e.query, params: e.params }, 'Query executed');
 });
 
 prisma.$on('error', (e) => {
-  logger.error(
-    {
-      message: e.message,
-      target: e.target,
-    },
-    'Database error'
-  );
+  logger.error({ message: e.message, target: e.target }, 'Database error');
 });
 
 export async function connectDatabase(): Promise<void> {
@@ -56,5 +34,11 @@ export async function disconnectDatabase(): Promise<void> {
   await prisma.$disconnect();
   logger.info('Database disconnected');
 }
+
+export { BaseRepository } from './repositories/base.repository';
+export { UserRepository } from './repositories/user.repository';
+export { RewardRepository } from './repositories/reward.repository';
+export { WalletRepository } from './repositories/wallet.repository';
+export { RedemptionRepository } from './repositories/redemption.repository';
 
 export default prisma;
