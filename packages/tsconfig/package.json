@@ -1,0 +1,9 @@
+{
+  "name": "@rewards/tsconfig",
+  "version": "1.0.0",
+  "description": "Shared TypeScript configuration for Rewards Platform",
+  "author": "FelixTwoli",
+  "license": "MIT",
+  "private": true,
+  "files": ["base.json", "nestjs.json"]
+}

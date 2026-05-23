@@ -1,0 +1,51 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "version": "2",
+  "extends": ["//"],
+  "globalDependencies": ["**/.env", "**/.env.local"],
+  "globalPassThroughEnv": ["NODE_ENV"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build", "typecheck"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "cache": true
+    },
+    "test": {
+      "inputs": ["src/**/*.ts", "test/**/*.ts", "jest.config.js"],
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "test:cov": {
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "test:e2e": {
+      "cache": false
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "inputs": ["src/**/*.ts", ".eslintrc.js"],
+      "cache": true
+    },
+    "lint:fix": {
+      "cache": false
+    },
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "inputs": ["src/**/*", ".prettierrc.json"],
+      "cache": true
+    },
+    "typecheck": {
+      "inputs": ["src/**/*.ts", "tsconfig.json"],
+      "cache": true
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

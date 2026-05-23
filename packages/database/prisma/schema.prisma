@@ -1,0 +1,226 @@
+// Rewards Platform Database Schema
+// Author: FelixTwoli
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum RedemptionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+  ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+// Users Domain
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  password  String
+  role      UserRole @default(CUSTOMER)
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // Relations
+  rewardAccount       RewardAccount?
+  wallet              Wallet?
+  refreshTokens       RefreshToken[]
+  walletTransactions  WalletTransaction[]
+  auditLogs           AuditLog[]
+  redemptionRequests  RedemptionRequest[]
+
+  @@map("users")
+  @@index([email])
+  @@index([createdAt])
+}
+
+// Authentication
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+  @@index([userId])
+  @@index([token])
+}
+
+// Rewards Domain
+model RewardAccount {
+  id          String  @id @default(uuid())
+  userId      String  @unique
+  balance     Int     @default(0)
+  totalEarned Int     @default(0)
+  totalRedeemed Int   @default(0)
+
+  version     Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions       RewardTransaction[]
+  redemptionRequests RedemptionRequest[]
+
+  @@map("reward_accounts")
+  @@index([userId])
+  @@unique([userId])
+}
+
+model RewardTransaction {
+  id              String   @id @default(uuid())
+  rewardAccountId String
+  points          Int
+  type            TransactionType
+  reason          String?
+  referenceId     String?
+
+  createdAt       DateTime @default(now())
+
+  rewardAccount RewardAccount @relation(fields: [rewardAccountId], references: [id], onDelete: Cascade)
+
+  @@map("reward_transactions")
+  @@index([rewardAccountId])
+  @@index([createdAt])
+  @@index([referenceId])
+}
+
+model RewardRule {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  points      Int
+  isActive    Boolean @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("reward_rules")
+  @@index([isActive])
+}
+
+// Wallet Domain
+model Wallet {
+  id      String  @id @default(uuid())
+  userId  String  @unique
+  balance Float   @default(0.0)
+
+  version Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    WalletTransaction[]
+  redemptionRequests RedemptionRequest[]
+
+  @@map("wallets")
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id          String   @id @default(uuid())
+  walletId    String
+  userId      String
+  amount      Float
+  type        TransactionType
+  status      TransactionStatus @default(PENDING)
+  reason      String?
+  referenceId String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  wallet     Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallet_transactions")
+  @@index([walletId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([referenceId])
+}
+
+// Redemption Domain
+model RedemptionRequest {
+  id                String   @id @default(uuid())
+  userId            String
+  rewardAccountId   String
+  walletId          String
+  points            Int
+  amountAwarded     Float
+  status            RedemptionStatus @default(PENDING)
+  idempotencyKey    String   @unique
+
+  processedAt       DateTime?
+  failureReason     String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardAccount     RewardAccount @relation(fields: [rewardAccountId], references: [id], onDelete: Cascade)
+  wallet            Wallet       @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@map("redemption_requests")
+  @@index([userId])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+  @@unique([idempotencyKey])
+}
+
+// Audit Trail
+model AuditLog {
+  id           String   @id @default(uuid())
+  userId       String
+  action       String
+  resourceType String
+  resourceId   String?
+  changes      Json?
+  ipAddress    String?
+  userAgent    String?
+
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}

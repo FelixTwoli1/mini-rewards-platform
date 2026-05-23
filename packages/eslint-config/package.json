@@ -1,0 +1,10 @@
+{
+  "name": "@rewards/eslint-config",
+  "version": "1.0.0",
+  "description": "Shared ESLint configuration for Rewards Platform",
+  "author": "FelixTwoli",
+  "license": "MIT",
+  "private": true,
+  "main": "index.js",
+  "files": ["index.js"]
+}
