@@ -1,0 +1,247 @@
+{
+  "info": {
+    "name": "Mini Rewards Platform",
+    "description": "API collection for Mini Rewards Platform — Author: FelixTwoli",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "authBaseUrl", "value": "http://localhost:3001/api/v1" },
+    { "key": "rewardsBaseUrl", "value": "http://localhost:3002/api/v1" },
+    { "key": "walletBaseUrl", "value": "http://localhost:3003/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "userId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data?.tokens?.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.tokens.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', res.data.tokens.refreshToken);",
+                  "  pm.collectionVariables.set('userId', res.data.user.id);",
+                  "  console.log('Tokens saved. User ID:', res.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"password\": \"SecurePass@123\"\n}"
+            },
+            "url": "{{authBaseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data?.tokens?.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.tokens.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', res.data.tokens.refreshToken);",
+                  "  pm.collectionVariables.set('userId', res.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@rewardsplatform.com\",\n  \"password\": \"Customer@123456\"\n}"
+            },
+            "url": "{{authBaseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{authBaseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{authBaseUrl}}/auth/refresh"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{authBaseUrl}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rewards",
+      "item": [
+        {
+          "name": "Get My Balance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{rewardsBaseUrl}}/rewards/balance"
+          }
+        },
+        {
+          "name": "Award Points — Signup Bonus",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"eventType\": \"SIGNUP_BONUS\"\n}"
+            },
+            "url": "{{rewardsBaseUrl}}/rewards/award"
+          }
+        },
+        {
+          "name": "Award Points — Purchase ($50)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"eventType\": \"PURCHASE_REWARD\",\n  \"referenceId\": \"ORDER-001\",\n  \"metadata\": { \"amount\": 50 }\n}"
+            },
+            "url": "{{rewardsBaseUrl}}/rewards/award"
+          }
+        },
+        {
+          "name": "Award Points — Promotion",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"eventType\": \"PROMOTIONAL_CAMPAIGN\",\n  \"metadata\": { \"points\": 300, \"campaign\": \"BLACK_FRIDAY\" }\n}"
+            },
+            "url": "{{rewardsBaseUrl}}/rewards/award"
+          }
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{rewardsBaseUrl}}/rewards/history?skip=0&take=10",
+              "query": [
+                { "key": "skip", "value": "0" },
+                { "key": "take", "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "item": [
+        {
+          "name": "Get Wallet Balance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{walletBaseUrl}}/wallet/balance"
+          }
+        },
+        {
+          "name": "Get Wallet Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{walletBaseUrl}}/wallet/history?skip=0&take=10",
+              "query": [
+                { "key": "skip", "value": "0" },
+                { "key": "take", "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Redemption",
+      "item": [
+        {
+          "name": "Redeem 500 Points",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"points\": 500,\n  \"idempotencyKey\": \"redeem-001-{{$randomUUID}}\"\n}"
+            },
+            "url": "{{walletBaseUrl}}/redemption"
+          }
+        },
+        {
+          "name": "Redeem 1000 Points",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"points\": 1000,\n  \"idempotencyKey\": \"redeem-002-{{$randomUUID}}\"\n}"
+            },
+            "url": "{{walletBaseUrl}}/redemption"
+          }
+        },
+        {
+          "name": "Get Redemption History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{walletBaseUrl}}/redemption/history"
+          }
+        }
+      ]
+    }
+  ]
+}
