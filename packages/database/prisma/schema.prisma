@@ -99,7 +99,6 @@ model RewardAccount {
 
   @@map("reward_accounts")
   @@index([userId])
-  @@unique([userId])
 }
 
 model RewardTransaction {
@@ -199,9 +198,7 @@ model RedemptionRequest {
   @@map("redemption_requests")
   @@index([userId])
   @@index([status])
-  @@index([idempotencyKey])
   @@index([createdAt])
-  @@unique([idempotencyKey])
 }
 
 // Audit Trail

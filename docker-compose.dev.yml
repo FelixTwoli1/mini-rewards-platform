@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rewards-postgres
+    environment:
+      POSTGRES_USER: rewards_user
+      POSTGRES_PASSWORD: rewards_pass
+      POSTGRES_DB: rewards_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rewards-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rewards_user']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: rewards-redis
+    ports:
+      - '6381:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - rewards-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  rewards-network:
+    driver: bridge

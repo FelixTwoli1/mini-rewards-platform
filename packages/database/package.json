@@ -21,7 +21,9 @@
   },
   "dependencies": {
     "@prisma/client": "^5.8.0",
-    "@rewards/logger": "workspace:*"
+    "@rewards/logger": "workspace:*",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
